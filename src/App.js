@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import CoursesList from './CoursesList';
 import Search from './Search';
 
-const courses = [
+const courses_data = [
   {
     id:1,
     title: "Bob likes things",
@@ -38,7 +38,30 @@ const courses = [
 
 ];
 
+
+const coursesRuducer = (state, action) => {
+  switch(action.type) {
+    case 'SET_COURSES':
+      return action.payload;
+      case 'REMOVE_COURSE':
+        return state.filter(
+          course => action.payload.id !== course.id
+        )
+      default: 
+      throw new Error();
+  }
+};
+
+
+
 const App = () => {
+ 
+  const [courses, dispatchCourses] = useReducer(
+    coursesRuducer,
+    []
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
   const[searchText, setSearchText] = useState(
     localStorage.getItem('searchText') || ''
     );
@@ -46,6 +69,29 @@ const App = () => {
   const handleSearch = event => {
     setSearchText(event.target.value);
     }
+  const handleRemoveCourse = course =>{
+    dispatchCourses({
+      type: 'REMOVE_COURSE',
+      payload: course
+    });
+  }
+  const getCoursesAsync = () => 
+    new Promise(resolve => 
+      setTimeout(
+        () => resolve({courses: courses_data}), 
+        2000
+      )
+      );
+  useEffect(() => {
+    setIsLoading(true);
+    getCoursesAsync().then(result => {
+      dispatchCourses({
+        type: 'SET_COURSES',
+        payload: result.courses
+      });
+      setIsLoading(false);
+    })
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('searchText' , searchText)
@@ -60,9 +106,13 @@ return (
     <div>
       <h1>List of Courses</h1>
       <hr />
-      <Search value={searchText} onSearch={handleSearch} />
 
-      <CoursesList courses={filteredCourses} />
+      <Search value={searchText} onSearch={handleSearch} />
+      {isLoading ? (
+        <p>Loading Courses ...</p>
+      ) : (
+        <CoursesList courses={filteredCourses} handleRemoveCourse={handleRemoveCourse}/> 
+      )}
     </div>
   );
 }

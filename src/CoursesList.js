@@ -1,8 +1,8 @@
 import React from 'react';
   
 
-const CoursesList =(props) => {
-    return props.courses.map(function(course) {
+const CoursesList =({courses, handleRemoveCourse}) => {
+    return courses.map(course => {
         return( <div
           key={course.id}>
           <span>
@@ -12,6 +12,12 @@ const CoursesList =(props) => {
           <span>| Video Hours: {course.hours_video}</span>
           <span>| Number of lectures: {course.number_of_lectures}</span>
           <span>| Rating: {course.rating}</span>
+          <br/><br/>
+          <span>
+              <button type="button" onClick={() => handleRemoveCourse(course)}>
+                  Remove
+              </button>
+          </span>
           <br/>
           <br/>
         </div>
